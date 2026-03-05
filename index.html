@@ -1,673 +1,424 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EXCELCIOR ROOTACNOOM</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopMaster - Belanja Online Terpercaya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff5a5a;
+            --primary-dark: #e04545;
+            --bg-main: #f8f9fa;
+            --text-primary: #1f2937;
+        }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        body { background: var(--bg-main); }
+        
+        /* Header */
+        .main-header { background: linear-gradient(135deg, #ff5a5a 0%, #ff8a5b 100%); }
+        .search-box { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); }
+        .search-box:focus-within { background: white; border-color: white; }
+        .search-box input { background: transparent; }
+        .search-box:focus-within input { color: #333; }
+        .search-box input::placeholder { color: rgba(255,255,255,0.8); }
+        .search-box:focus-within input::placeholder { color: #999; }
 
-  <style>
-    /* CSS Styles tetap sama seperti sebelumnya untuk menjaga design */
-    :root {
-      --bg-primary: #050508; --bg-secondary: #0c0c12; --bg-card: rgba(15, 15, 25, 0.7);
-      --fg: #f0f0f5; --fg-muted: #6b6b80; --accent: #00d4aa; --accent-glow: rgba(0, 212, 170, 0.4);
-      --accent-secondary: #7c3aed; --danger: #ff4757; --warning: #ffa502; --success: #00d4aa;
-      --border: rgba(255, 255, 255, 0.06);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Space Grotesk', sans-serif; background: var(--bg-primary); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
-    .font-brand { font-family: 'Orbitron', sans-serif; }
+        /* Banner */
+        .banner-slider { overflow: hidden; border-radius: 16px; }
+        .banner-track { display: flex; transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        .banner-slide { min-width: 100%; aspect-ratio: 2.5; }
+        .banner-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Background & Animation Styles */
-    .bg-cosmos { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%), var(--bg-primary); }
-    .floating-orb { position: absolute; border-radius: 50%; filter: blur(60px); animation: floatOrb 25s ease-in-out infinite; pointer-events: none; }
-    .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -10%; left: -10%; opacity: 0.15; }
-    .orb-2 { width: 500px; height: 500px; background: var(--accent-secondary); bottom: -20%; right: -10%; opacity: 0.1; animation-delay: -8s; }
-    @keyframes floatOrb { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.1); } }
-    
-    .glass { background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), #00b894); color: var(--bg-primary); font-weight: 600; padding: 14px 28px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s ease; width: 100%; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent-glow); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    
-    .input-field { width: 100%; padding: 16px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; color: var(--fg); font-family: inherit; font-size: 15px; transition: all 0.3s ease; }
-    .input-field:focus { outline: none; border-color: var(--accent); background: rgba(0, 212, 170, 0.05); box-shadow: 0 0 0 4px var(--accent-glow); }
-    
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; visibility: hidden; transition: all 0.4s ease; }
-    .modal-backdrop.open { opacity: 1; visibility: visible; }
-    .modal-content { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: scale(0.9) translateY(20px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    .modal-backdrop.open .modal-content { transform: scale(1) translateY(0); }
+        /* Product Card */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-color: transparent;
+        }
+        .product-img-box { position: relative; overflow: hidden; aspect-ratio: 1; }
+        .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .product-card:hover .product-img-box img { transform: scale(1.08); }
+        
+        /* Flash Sale */
+        .fs-timer { background: #1f2937; color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 14px; min-width: 36px; text-align: center; }
 
-    /* Product Cards & Other Styles (Compressed for brevity, same as before) */
-    .product-card { border-radius: 20px; overflow: hidden; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    .product-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 30px 60px -20px var(--accent-glow); }
-    .product-image { position: relative; aspect-ratio: 4/3; background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); overflow: hidden; }
-    .product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
-    .product-card:hover .product-image img { transform: scale(1.1); }
-    .sidebar-panel { position: fixed; top: 0; right: 0; width: 100%; max-width: 480px; height: 100vh; background: var(--bg-secondary); border-left: 1px solid var(--border); z-index: 900; transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
-    .sidebar-panel.open { transform: translateX(0); }
-    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 899; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-    .sidebar-overlay.open { opacity: 1; visibility: visible; }
-    .progress-container { background: rgba(255, 255, 255, 0.1); border-radius: 100px; overflow: hidden; height: 8px; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-secondary)); border-radius: 100px; transition: width 0.8s ease; position: relative; }
-    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
-    .toast-item { background: var(--bg-card); border: 1px solid var(--accent); padding: 16px 24px; border-radius: 12px; backdrop-filter: blur(10px); animation: toastIn 0.4s ease, toastOut 0.4s ease 2.6s forwards; display: flex; align-items: center; gap: 12px; min-width: 280px; }
-    @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes toastOut { to { transform: translateX(100%); opacity: 0; } }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  </style>
+        /* Cart Drawer */
+        .cart-drawer {
+            position: fixed; top: 0; right: 0;
+            width: 100%; max-width: 420px; height: 100vh;
+            background: white; z-index: 300;
+            transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+        }
+        .cart-drawer.active { transform: translateX(0); }
+        
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; z-index: 50; display: flex; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; color: #888; font-size: 10px; cursor: pointer; transition: color 0.2s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; width: 100%; max-width: 500px; max-height: 90vh; border-radius: 24px 24px 0 0; overflow-y: auto; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Button */
+        .btn-main { background: var(--primary); color: white; padding: 14px; border-radius: 12px; font-weight: 600; border: none; width: 100%; cursor: pointer; transition: background 0.2s; }
+        .btn-main:hover { background: var(--primary-dark); }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 400; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .toast.show { display: block; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        @media (min-width: 1024px) { .bottom-nav { display: none; } }
+    </style>
 </head>
 <body>
 
-  <div class="bg-cosmos">
-    <div class="floating-orb orb-1"></div>
-    <div class="floating-orb orb-2"></div>
-  </div>
-
-  <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Auth Modal -->
-  <div class="modal-backdrop open" id="authModal">
-    <div class="modal-content p-8">
-      <div class="text-center mb-8">
-        <h1 class="font-brand text-2xl font-bold tracking-wider mb-2">EXCELCIOR</h1>
-        <p class="text-sm text-[var(--fg-muted)] tracking-widest uppercase">Rootacnoom Portal</p>
-      </div>
-      
-      <div id="authForm">
-        <!-- Login Form -->
-        <div id="loginForm">
-          <h2 class="text-xl font-bold mb-6">Welcome Back</h2>
-          <div class="space-y-4 mb-6">
-            <input type="email" id="loginEmail" class="input-field" placeholder="Email address" required>
-            <input type="password" id="loginPassword" class="input-field" placeholder="Password" required>
-          </div>
-          <button onclick="handleLogin()" class="btn-primary mb-4" id="loginBtn">Sign In</button>
-          <p class="text-center text-sm text-[var(--fg-muted)]">
-            Don't have an account? 
-            <button onclick="showRegister()" class="text-[var(--accent)] hover:underline">Create one</button>
-          </p>
-        </div>
-
-        <!-- Register Form -->
-        <div id="registerForm" class="hidden">
-          <h2 class="text-xl font-bold mb-6">Create Account</h2>
-          <div class="space-y-4 mb-6">
-            <input type="text" id="regName" class="input-field" placeholder="Full name" required>
-            <input type="email" id="regEmail" class="input-field" placeholder="Email address" required>
-            <input type="password" id="regPassword" class="input-field" placeholder="Password (min 6 chars)" required minlength="6">
-          </div>
-          <button onclick="handleRegister()" class="btn-primary mb-4" id="registerBtn">Create Account</button>
-          <p class="text-center text-sm text-[var(--fg-muted)]">
-            Already have an account? 
-            <button onclick="showLogin()" class="text-[var(--accent)] hover:underline">Sign in</button>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main App (Hidden until login) -->
-  <div id="mainApp" class="hidden">
     <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--border)]">
-      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] flex items-center justify-center">
-            <span class="font-brand font-bold text-black text-sm">ER</span>
-          </div>
-          <div>
-            <h1 class="font-brand text-lg font-bold tracking-wider">EXCELCIOR</h1>
-            <p class="text-[10px] text-[var(--fg-muted)] tracking-widest uppercase -mt-1">Rootacnoom</p>
-          </div>
+    <header class="main-header sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center gap-4">
+                <a href="#" class="text-white font-extrabold text-2xl tracking-tight hidden md:block">ShopMaster</a>
+                <div class="flex-1 max-w-2xl">
+                    <div class="search-box flex items-center rounded-full overflow-hidden px-4 py-3">
+                        <input type="text" id="search-input" placeholder="Cari produk impianmu..." class="flex-1 outline-none text-white text-sm">
+                        <button onclick="searchProducts()" class="text-white text-lg ml-2"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+                <button onclick="openCart()" class="relative text-white">
+                    <i class="fas fa-shopping-bag text-2xl"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 w-5 h-5 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
         </div>
-
-        <!-- Search -->
-        <div class="flex-1 max-w-xl mx-8 hidden md:block">
-          <div class="relative">
-            <input type="text" id="searchInput" class="input-field py-3 pl-12 pr-4" placeholder="Search products...">
-            <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-4">
-          <button onclick="openDashboard()" class="btn-ghost text-sm hidden sm:flex items-center gap-2" style="background: transparent; border: 1px solid var(--border);">
-            My Orders
-          </button>
-          <button onclick="openCart()" class="relative p-3 rounded-xl glass hover:border-[var(--accent)] transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-            <span id="cartBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-[var(--accent)] text-black text-xs font-bold rounded-full flex items-center justify-center hidden">0</span>
-          </button>
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-secondary)] flex items-center justify-center text-black font-bold text-sm" id="userAvatar">U</div>
-            <button onclick="handleLogout()" class="text-sm text-[var(--fg-muted)] hover:text-[var(--danger)] transition-colors">Logout</button>
-          </div>
-        </div>
-      </div>
     </header>
 
-    <!-- Content Sections (Same as previous) -->
-    <section class="pt-32 pb-20 px-6">
-      <div class="max-w-7xl mx-auto">
-        <div class="max-w-3xl">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-[var(--accent)] mb-6">
-            <span class="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse"></span>
-            Real-time Project Tracking
-          </div>
-          <h1 class="font-brand text-5xl md:text-7xl font-bold leading-tight mb-6">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)]">Premium</span><br>
-            Digital Services
-          </h1>
-          <p class="text-xl text-[var(--fg-muted)] mb-8 max-w-xl">
-            Order professional digital products, track progress in real-time.
-          </p>
-          <button onclick="scrollToProducts()" class="btn-primary flex items-center gap-2" style="width: auto; display: inline-flex;">
-            Browse Services
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section id="productsSection" class="py-20 px-6">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div>
-            <h2 class="text-3xl font-bold mb-2">Available Services</h2>
-            <p class="text-[var(--fg-muted)]">Select a service to get started</p>
-          </div>
-          <div class="flex gap-3 overflow-x-auto pb-2" id="categoryFilter"></div>
-        </div>
-        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
-        <div id="emptyState" class="hidden text-center py-20">
-          <h3 class="text-xl font-medium text-[var(--fg-muted)]">No services found</h3>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <!-- Sidebars & Modals (Same structure as previous, abbreviated here) -->
-  <div class="sidebar-overlay" id="cartOverlay" onclick="closeCart()"></div>
-  <aside class="sidebar-panel" id="cartPanel">
-    <div class="p-6 border-b border-[var(--border)] flex items-center justify-between">
-      <h2 class="text-xl font-bold">Shopping Cart</h2>
-      <button onclick="closeCart()" class="p-2 rounded-lg hover:bg-white/5"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-    </div>
-    <div class="flex-1 overflow-y-auto p-6" id="cartItems"></div>
-    <div class="p-6 border-t border-[var(--border)] bg-[var(--bg-primary)]">
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-[var(--fg-muted)]">Total</span>
-        <span class="text-2xl font-bold" id="cartTotal">$0.00</span>
-      </div>
-      <button onclick="checkout()" class="btn-primary" id="checkoutBtn">Proceed to Checkout</button>
-    </div>
-  </aside>
-
-  <div class="sidebar-overlay" id="dashOverlay" onclick="closeDashboard()"></div>
-  <aside class="sidebar-panel" id="dashPanel" style="max-width: 600px;">
-    <div class="p-6 border-b border-[var(--border)]">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">My Orders</h2>
-        <button onclick="closeDashboard()" class="p-2 rounded-lg hover:bg-white/5"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="filterOrders('all')" class="order-filter-btn active flex-1 py-2 rounded-lg text-sm font-medium transition-colors">All</button>
-        <button onclick="filterOrders('active')" class="order-filter-btn flex-1 py-2 rounded-lg text-sm font-medium glass transition-colors">Active</button>
-        <button onclick="filterOrders('completed')" class="order-filter-btn flex-1 py-2 rounded-lg text-sm font-medium glass transition-colors">Done</button>
-      </div>
-    </div>
-    <div class="flex-1 overflow-y-auto" id="ordersContainer"></div>
-  </aside>
-
-  <div class="modal-backdrop" id="orderModal"><div class="modal-content max-w-2xl"><div id="orderDetail" class="p-8"></div></div></div>
-  <div class="modal-backdrop" id="productModal"><div class="modal-content max-w-4xl"><div id="productDetail" class="grid md:grid-cols-2"></div></div></div>
-
-  <script>
-    // =============================================
-    // SUPABASE CONFIG
-    // =============================================
-    const SUPABASE_URL = 'https://tepbgaalplvxvceftxmb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcGJnYWFscGx2eHZjZWZ0eG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2OTY2NTUsImV4cCI6MjA4ODI3MjY1NX0.GeQPIi0BQFhIkWYlohuV1tH-pGTdcAwGwDhRUUoWXT0';
-    
-    let db = null;
-    let currentUser = null;
-    let products = [];
-    let cart = [];
-    let orders = [];
-    let activeCategory = 'all';
-    let orderFilter = 'all';
-
-    // Initialize Supabase with check
-    try {
-      if (SUPABASE_URL && SUPABASE_URL !== 'https://YOUR_PROJECT_URL.supabase.co') {
-        db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      } else {
-        console.warn("Supabase keys not configured.");
-      }
-    } catch (e) {
-      console.error("Supabase Init Error:", e);
-    }
-
-    // =============================================
-    // AUTH FUNCTIONS (FIXED)
-    // =============================================
-    function showRegister() {
-      document.getElementById('loginForm').classList.add('hidden');
-      document.getElementById('registerForm').classList.remove('hidden');
-    }
-
-    function showLogin() {
-      document.getElementById('registerForm').classList.add('hidden');
-      document.getElementById('loginForm').classList.remove('hidden');
-    }
-
-    function setLoading(btnId, loading) {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.disabled = loading;
-      btn.textContent = loading ? 'Processing...' : (btnId === 'loginBtn' ? 'Sign In' : 'Create Account');
-    }
-
-    async function handleRegister() {
-      if (!db) {
-        showToast('Database not connected. Please setup Supabase.', 'error');
-        return;
-      }
-
-      const name = document.getElementById('regName').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const password = document.getElementById('regPassword').value;
-
-      if (!name || !email || !password) {
-        showToast('Please fill all fields', 'error');
-        return;
-      }
-
-      setLoading('registerBtn', true);
-
-      try {
-        // 1. Check if email exists
-        const { data: existing, error: checkError } = await db
-          .from('profiles')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle(); // maybeSingle returns null if not found, instead of error
-
-        if (existing) {
-          showToast('Email already registered', 'error');
-          setLoading('registerBtn', false);
-          return;
-        }
-
-        // 2. Insert new user
-        const { data: newUser, error: insertError } = await db
-          .from('profiles')
-          .insert([{ name, email, password }])
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        // 3. Login automatically
-        currentUser = newUser;
-        localStorage.setItem('er_user', JSON.stringify(currentUser));
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
         
-        showToast('Account created successfully!', 'success');
-        initApp();
+        <!-- Banner -->
+        <section class="mb-6">
+            <div class="banner-slider" id="banner-slider">
+                <div class="banner-track" id="banner-track"></div>
+            </div>
+        </section>
 
-      } catch (err) {
-        console.error(err);
-        showToast('Registration failed: ' + (err.message || 'Unknown error'), 'error');
-      } finally {
-        setLoading('registerBtn', false);
-      }
-    }
+        <!-- Categories -->
+        <section class="bg-white rounded-2xl p-4 mb-6 shadow-sm">
+            <div class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide" id="categories-grid">
+                <!-- Cats loaded here -->
+            </div>
+        </section>
 
-    async function handleLogin() {
-      if (!db) {
-        showToast('Database not connected.', 'error');
-        return;
-      }
+        <!-- Flash Sale -->
+        <section class="mb-6">
+            <div class="bg-gradient-to-r from-red-500 to-orange-400 rounded-t-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-bolt text-yellow-300 text-xl"></i>
+                    <span class="text-white font-bold text-lg">FLASH SALE</span>
+                </div>
+                <div class="flex gap-1 items-center">
+                    <span class="fs-timer" id="h">00</span><span class="text-white mx-1">:</span>
+                    <span class="fs-timer" id="m">00</span><span class="text-white mx-1">:</span>
+                    <span class="fs-timer" id="s">00</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-b-2xl p-4 border border-t-0 border-red-100">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3" id="flash-sale-grid">
+                    <!-- Flash sale items -->
+                </div>
+            </div>
+        </section>
 
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
+        <!-- Products -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Produk Untuk Kamu</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="products-grid">
+                <!-- Products -->
+            </div>
+            <div class="text-center mt-10">
+                <button onclick="loadMoreProducts()" class="px-8 py-3 border-2 border-gray-200 text-gray-600 font-medium rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors">Lihat Lebih Banyak</button>
+            </div>
+        </section>
 
-      if (!email || !password) {
-        showToast('Please fill all fields', 'error');
-        return;
-      }
+    </main>
 
-      setLoading('loginBtn', true);
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav md:hidden">
+        <div class="nav-item active"><i class="fas fa-home"></i><span>Home</span></div>
+        <div class="nav-item"><i class="fas fa-th-large"></i><span>Kategori</span></div>
+        <div class="nav-item" onclick="openCart()"><i class="fas fa-shopping-bag"></i><span>Keranjang</span></div>
+        <div class="nav-item"><i class="fas fa-heart"></i><span>Wishlist</span></div>
+        <div class="nav-item"><i class="fas fa-user"></i><span>Akun</span></div>
+    </nav>
 
-      try {
-        const { data, error } = await db
-          .from('profiles')
-          .select('*')
-          .eq('email', email)
-          .eq('password', password)
-          .single();
+    <!-- Product Detail Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-content" id="product-detail-content">
+            <!-- Dynamic content -->
+        </div>
+    </div>
 
-        if (error || !data) {
-          showToast('Invalid email or password', 'error');
-          return;
+    <!-- Cart Drawer -->
+    <div class="fixed inset-0 bg-black/30 z-250 hidden" id="cart-overlay" onclick="closeCart()"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="font-bold text-xl text-gray-800">Keranjang</h3>
+            <button onclick="closeCart()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6" id="cart-items">
+            <!-- Items -->
+        </div>
+        <div class="p-6 border-t bg-gray-50">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-500">Total</span>
+                <span class="text-xl font-bold text-gray-800" id="cart-total">Rp 0</span>
+            </div>
+            <button class="btn-main" onclick="checkout()">Checkout Sekarang</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Ditambahkan ke keranjang</div>
+
+    <script>
+        // ==========================================
+        // KONFIGURASI SUPABASE - PASTE DI SINI
+        // ==========================================
+        const SUPABASE_URL = 'https://ipdzrgctpfugquditjyr.supabase.co'; // Ganti dengan URL Anda
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZHpyZ2N0cGZ1Z3F1ZGl0anlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2OTgxOTcsImV4cCI6MjA4ODI3NDE5N30.Z1Hkyaip0zPK70ygSh3GxC6SIRjg9lbp-haAH2CJ8uA'; // Ganti dengan Anon Key Anda
+        // ==========================================
+
+        let supabase = null;
+        if (SUPABASE_URL !== 'https://YOUR_PROJECT_URL.supabase.co' && SUPABASE_KEY !== 'YOUR_ANON_KEY') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 
-        currentUser = data;
-        localStorage.setItem('er_user', JSON.stringify(currentUser));
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let allProducts = [];
+        let currentSlide = 0;
+        let displayCount = 10;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartUI();
+            if(supabase) {
+                loadBanners();
+                loadCategories();
+                loadProducts();
+            } else {
+                 document.getElementById('products-grid').innerHTML = '<div class="col-span-full text-center py-12 text-gray-400">Koneksi database belum diatur.</div>';
+            }
+            startCountdown();
+        });
+
+        // --- LOADERS ---
+        async function loadBanners() {
+            const { data } = await supabase.from('banners').select('*').eq('is_active', true);
+            const track = document.getElementById('banner-track');
+            if(!data || data.length === 0) {
+                track.innerHTML = '<div class="banner-slide"><img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&h=400&fit=crop"></div>';
+                return;
+            }
+            track.innerHTML = data.map(b => `<div class="banner-slide"><img src="${b.image_url}" alt="${b.title}"></div>`).join('');
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % data.length;
+                track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }, 4000);
+        }
+
+        async function loadCategories() {
+            const { data } = await supabase.from('categories').select('*').limit(10);
+            const grid = document.getElementById('categories-grid');
+            grid.innerHTML = (data || []).map(c => `
+                <div onclick="filterByCategory('${c.id}')" class="flex flex-col items-center min-w-[70px] cursor-pointer group">
+                    <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mb-2 group-hover:bg-red-100 transition-colors">
+                        <i class="${c.icon || 'fas fa-tag'} text-red-500 text-lg"></i>
+                    </div>
+                    <span class="text-xs text-gray-600 font-medium whitespace-nowrap">${c.name}</span>
+                </div>
+            `).join('');
+        }
+
+        async function loadProducts() {
+            const { data } = await supabase.from('products').select('*, categories(name)').order('created_at', { ascending: false });
+            allProducts = data || [];
+            renderProducts();
+            renderFlashSale();
+        }
+
+        function renderProducts() {
+            const toShow = allProducts.slice(0, displayCount);
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = toShow.map(p => productCardHTML(p)).join('');
+        }
+
+        function loadMoreProducts() { displayCount += 10; renderProducts(); }
+
+        function renderFlashSale() {
+            const fs = allProducts.filter(p => p.discount > 10).slice(0, 6);
+            document.getElementById('flash-sale-grid').innerHTML = fs.map(p => productCardHTML(p, true)).join('');
+        }
+
+        function productCardHTML(p, mini = false) {
+            const fp = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+            return `
+                <div class="product-card" onclick="openProduct('${p.id}')">
+                    <div class="product-img-box">
+                        <img src="${p.image || 'https://via.placeholder.com/200'}" alt="${p.name}">
+                        ${p.discount > 0 ? `<span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">${p.discount}%</span>` : ''}
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col">
+                        <h3 class="text-sm text-gray-800 font-medium line-clamp-2 mb-2 leading-snug">${p.name}</h3>
+                        <div class="mt-auto">
+                            <p class="text-red-500 font-bold ${mini ? 'text-sm' : ''}">Rp ${fp.toLocaleString('id-ID')}</p>
+                            ${p.discount > 0 ? `<p class="text-gray-400 text-xs line-through">Rp ${p.price.toLocaleString('id-ID')}</p>` : ''}
+                            <div class="flex items-center gap-1 mt-2 text-gray-400 text-xs">
+                                <i class="fas fa-star text-yellow-400"></i> ${p.rating?.toFixed(1) || '4.5'} | ${p.sold || 0} terjual
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- INTERACTIONS ---
+        async function openProduct(id) {
+            const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
+            if(!p) return;
+            const fp = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+            document.getElementById('product-detail-content').innerHTML = `
+                <div class="relative">
+                    <button onclick="closeProductModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-600 shadow">&times;</button>
+                    <img src="${p.image}" class="w-full aspect-square object-cover">
+                </div>
+                <div class="p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">${p.name}</h2>
+                    <div class="flex items-end gap-3 mb-4">
+                        <span class="text-3xl font-bold text-red-500">Rp ${fp.toLocaleString('id-ID')}</span>
+                        ${p.discount > 0 ? `<span class="text-gray-400 line-through text-lg">Rp ${p.price.toLocaleString('id-ID')}</span>` : ''}
+                    </div>
+                    <div class="flex gap-4 text-sm text-gray-500 mb-6 pb-4 border-b">
+                        <span><i class="fas fa-star text-yellow-400"></i> ${p.rating?.toFixed(1) || '4.5'}</span>
+                        <span>${p.sold || 0} Terjual</span>
+                        <span>Stok: ${p.stock}</span>
+                    </div>
+                    ${p.description ? `<p class="text-gray-600 text-sm mb-6">${p.description}</p>` : ''}
+                    <div class="flex gap-3">
+                        <button onclick="addToCartDirect('${p.id}')" class="flex-1 py-3 border-2 border-red-500 text-red-500 font-bold rounded-xl hover:bg-red-50 transition-colors">+ Keranjang</button>
+                        <button onclick="buyNow('${p.id}')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-200">Beli</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        function closeProductModal() { document.getElementById('product-modal').classList.remove('active'); }
         
-        showToast('Welcome back, ' + data.name + '!', 'success');
-        initApp();
-
-      } catch (err) {
-        showToast('Login failed', 'error');
-      } finally {
-        setLoading('loginBtn', false);
-      }
-    }
-
-    function handleLogout() {
-      currentUser = null;
-      localStorage.removeItem('er_user');
-      location.reload(); // Reload to reset state cleanly
-    }
-
-    // =============================================
-    // INITIALIZATION
-    // =============================================
-    async function init() {
-      const savedUser = localStorage.getItem('er_user');
-      if (savedUser) {
-        try {
-          currentUser = JSON.parse(savedUser);
-          // Verify user still exists in DB (optional but good practice)
-          const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
-          if (data) {
-            currentUser = data; // Update local data
-            initApp();
-          } else {
-            // User deleted from DB
-            localStorage.removeItem('er_user');
-            document.getElementById('authModal').classList.add('open');
-          }
-        } catch (e) {
-          localStorage.removeItem('er_user');
-          document.getElementById('authModal').classList.add('open');
+        async function addToCartDirect(id) {
+            const { data: p } = await supabase.from('products').select('*').eq('id', id).single();
+            if(!p) return;
+            const fp = p.discount > 0 ? Math.round(p.price * (1 - p.discount / 100)) : p.price;
+            const exist = cart.find(i => i.id === id);
+            if(exist) exist.qty++; else cart.push({ id, name: p.name, price: fp, image: p.image, qty: 1 });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+            closeProductModal();
+            showToast('Ditambahkan ke keranjang');
         }
-      } else {
-        document.getElementById('authModal').classList.add('open');
-      }
-    }
 
-    async function initApp() {
-      // Hide Auth Modal
-      const authModal = document.getElementById('authModal');
-      authModal.classList.remove('open');
-      setTimeout(() => authModal.classList.add('hidden'), 400);
-      
-      // Show Main App
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+        async function buyNow(id) { await addToCartDirect(id); openCart(); }
 
-      // Load Data
-      await fetchProducts();
-      await fetchOrders();
-      subscribeToUpdates();
+        // Cart System
+        function updateCartUI() {
+            const count = cart.reduce((s, i) => s + i.qty, 0);
+            document.getElementById('cart-count').textContent = count;
+            const itemsDiv = document.getElementById('cart-items');
+            if(cart.length === 0) { itemsDiv.innerHTML = '<div class="text-center text-gray-400 py-12"><i class="fas fa-shopping-bag text-4xl mb-4"></i><p>Keranjang kosong</p></div>'; document.getElementById('cart-total').textContent = 'Rp 0'; return; }
+            itemsDiv.innerHTML = cart.map((i, idx) => `
+                <div class="flex gap-4 mb-4 pb-4 border-b">
+                    <img src="${i.image}" class="w-20 h-20 rounded-xl object-cover">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-800 text-sm mb-1">${i.name}</h4>
+                        <p class="text-red-500 font-bold">Rp ${i.price.toLocaleString('id-ID')}</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <div class="flex items-center border rounded-lg">
+                                <button onclick="updateQty(${idx}, -1)" class="px-3 py-1 text-gray-500 hover:bg-gray-100">-</button>
+                                <span class="px-3 text-sm font-medium">${i.qty}</span>
+                                <button onclick="updateQty(${idx}, 1)" class="px-3 py-1 text-gray-500 hover:bg-gray-100">+</button>
+                            </div>
+                            <button onclick="removeItem(${idx})" class="text-red-400 text-sm hover:text-red-600">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            document.getElementById('cart-total').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        }
 
-      // Load Cart
-      const savedCart = localStorage.getItem('er_cart_' + currentUser.id);
-      if (savedCart) cart = JSON.parse(savedCart);
-      updateCartUI();
+        function updateQty(idx, delta) { cart[idx].qty += delta; if(cart[idx].qty < 1) cart.splice(idx, 1); localStorage.setItem('cart', JSON.stringify(cart)); updateCartUI(); }
+        function removeItem(idx) { cart.splice(idx, 1); localStorage.setItem('cart', JSON.stringify(cart)); updateCartUI(); }
+        
+        function openCart() { document.getElementById('cart-overlay').classList.remove('hidden'); document.getElementById('cart-drawer').classList.add('active'); }
+        function closeCart() { document.getElementById('cart-overlay').classList.add('hidden'); document.getElementById('cart-drawer').classList.remove('active'); }
 
-      // Init Search
-      const searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', renderProducts);
-    }
+        async function checkout() {
+            if(cart.length === 0) return;
+            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            const { data: order } = await supabase.from('orders').insert([{ total, status: 'pending' }]).select().single();
+            if(order) {
+                const items = cart.map(i => ({ order_id: order.id, product_id: i.id, product_name: i.name, quantity: i.qty, price: i.price }));
+                await supabase.from('order_items').insert(items);
+                cart = []; localStorage.setItem('cart', JSON.stringify(cart)); updateCartUI(); closeCart(); showToast('Pesanan berhasil dibuat!');
+            }
+        }
 
-    async function fetchProducts() {
-      if (!db) return;
-      const { data } = await db.from('products').select('*').order('created_at', { ascending: false });
-      products = data || [];
-      renderProducts();
-      renderCategories();
-    }
+        function filterByCategory(id) {
+            const filtered = allProducts.filter(p => p.category_id === id);
+            document.getElementById('products-grid').innerHTML = filtered.map(p => productCardHTML(p)).join('');
+        }
 
-    async function fetchOrders() {
-      if (!db || !currentUser) return;
-      const { data } = await db.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-      orders = data || [];
-      renderOrders();
-    }
+        function searchProducts() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const res = allProducts.filter(p => p.name.toLowerCase().includes(q));
+            document.getElementById('products-grid').innerHTML = res.map(p => productCardHTML(p)).join('');
+        }
+        document.getElementById('search-input').addEventListener('keyup', e => { if(e.key === 'Enter') searchProducts(); });
 
-    function subscribeToUpdates() {
-      if (!db || !currentUser) return;
+        function startCountdown() {
+            const end = new Date(); end.setHours(23, 59, 59);
+            setInterval(() => {
+                const now = new Date();
+                const diff = end - now;
+                const h = Math.floor(diff / (1000*60*60));
+                const m = Math.floor((diff % (1000*60*60)) / (1000*60));
+                const s = Math.floor((diff % (1000*60)) / 1000);
+                document.getElementById('h').textContent = h.toString().padStart(2, '0');
+                document.getElementById('m').textContent = m.toString().padStart(2, '0');
+                document.getElementById('s').textContent = s.toString().padStart(2, '0');
+            }, 1000);
+        }
 
-      db.channel('products-channel').on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'products' },
-        () => { fetchProducts(); showToast('Product catalog updated', 'info'); }
-      ).subscribe();
-
-      db.channel('orders-channel').on('postgres_changes',
-        { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${currentUser.id}` },
-        () => { fetchOrders(); showToast('Order status updated', 'info'); }
-      ).subscribe();
-    }
-
-    // =============================================
-    // UI RENDERING (Same logic as before)
-    // =============================================
-    function renderCategories() {
-      const cats = ['all', ...new Set(products.map(p => p.category).filter(Boolean))];
-      document.getElementById('categoryFilter').innerHTML = cats.map(cat => `
-        <button onclick="filterCategory('${cat}')" 
-          class="px-5 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
-          ${activeCategory === cat ? 'bg-[var(--accent)] text-black' : 'glass hover:border-[var(--accent)]'}">
-          ${cat === 'all' ? 'All Services' : cat}
-        </button>
-      `).join('');
-    }
-
-    function filterCategory(cat) {
-      activeCategory = cat;
-      renderCategories();
-      renderProducts();
-    }
-
-    function renderProducts() {
-      const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-      
-      let filtered = products;
-      if (activeCategory !== 'all') filtered = filtered.filter(p => p.category === activeCategory);
-      if (searchTerm) {
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(searchTerm) ||
-          (p.description && p.description.toLowerCase().includes(searchTerm))
-        );
-      }
-
-      const grid = document.getElementById('productsGrid');
-      const empty = document.getElementById('emptyState');
-
-      if (filtered.length === 0) {
-        grid.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      empty.classList.add('hidden');
-      
-      grid.innerHTML = filtered.map((p, i) => `
-        <article class="product-card glass" style="animation: fadeIn 0.6s ease ${i*0.1}s forwards; opacity:0;">
-          <div class="product-image" onclick="openProductDetail('${p.id}')">
-            ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : `<div class="w-full h-full flex items-center justify-center"><span class="text-6xl opacity-30">${p.name.charAt(0)}</span></div>`}
-          </div>
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-4 mb-3">
-              <h3 class="font-bold text-lg">${p.name}</h3>
-              <span class="text-lg font-bold text-[var(--accent)]">$${parseFloat(p.price).toFixed(2)}</span>
-            </div>
-            <p class="text-sm text-[var(--fg-muted)] line-clamp-2 mb-4">${p.description || ''}</p>
-            <div class="flex items-center justify-between">
-              <span class="text-xs px-3 py-1 rounded-full glass">${p.category || 'Service'}</span>
-              <button onclick="addToCart('${p.id}')" class="text-sm font-medium text-[var(--accent)] hover:underline">Add to Cart</button>
-            </div>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    function openProductDetail(id) {
-      const p = products.find(x => x.id === id);
-      if (!p) return;
-      // Modal rendering logic (similar to previous)
-      document.getElementById('productDetail').innerHTML = `
-        <div class="aspect-square bg-[var(--bg-primary)] relative overflow-hidden">
-           ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center"><span class="text-9xl opacity-20">${p.name.charAt(0)}</span></div>`}
-        </div>
-        <div class="p-8 flex flex-col relative">
-           <button onclick="closeProductModal()" class="absolute top-4 right-4 p-2 rounded-full glass"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-           <span class="text-xs text-[var(--accent)] uppercase tracking-widest mb-2">${p.category || 'Service'}</span>
-           <h2 class="text-3xl font-bold mb-4">${p.name}</h2>
-           <span class="text-3xl font-bold text-[var(--accent)] mb-6">$${parseFloat(p.price).toFixed(2)}</span>
-           <p class="text-[var(--fg-muted)] mb-6">${p.description || ''}</p>
-           <div class="mt-auto">
-             <button onclick="addToCart('${p.id}'); closeProductModal();" class="btn-primary w-full">Add to Cart</button>
-           </div>
-        </div>
-      `;
-      document.getElementById('productModal').classList.add('open');
-    }
-    function closeProductModal() { document.getElementById('productModal').classList.remove('open'); }
-
-    function openCart() { document.getElementById('cartOverlay').classList.add('open'); document.getElementById('cartPanel').classList.add('open'); }
-    function closeCart() { document.getElementById('cartOverlay').classList.remove('open'); document.getElementById('cartPanel').classList.remove('open'); }
-
-    function addToCart(id) {
-      const p = products.find(x => x.id === id);
-      if (!p) return;
-      const existing = cart.find(i => i.product_id === id);
-      if (existing) existing.qty++;
-      else cart.push({ product_id: p.id, name: p.name, price: p.price, image_url: p.image_url, qty: 1 });
-      saveCart(); updateCartUI(); showToast('Added to cart', 'success');
-    }
-
-    function updateCartQty(id, delta) {
-      const item = cart.find(i => i.product_id === id);
-      if (!item) return;
-      item.qty += delta;
-      if (item.qty <= 0) cart = cart.filter(i => i.product_id !== id);
-      saveCart(); updateCartUI();
-    }
-
-    function saveCart() { if (currentUser) localStorage.setItem('er_cart_' + currentUser.id, JSON.stringify(cart)); }
-
-    function updateCartUI() {
-      const count = cart.reduce((sum, i) => sum + i.qty, 0);
-      const total = cart.reduce((sum, i) => sum + (parseFloat(i.price) * i.qty), 0);
-      const badge = document.getElementById('cartBadge');
-      if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
-      document.getElementById('cartTotal').textContent = '$' + total.toFixed(2);
-      const container = document.getElementById('cartItems');
-      if (cart.length === 0) { container.innerHTML = '<div class="text-center py-16 text-[var(--fg-muted)]">Cart is empty</div>'; return; }
-      container.innerHTML = cart.map(item => `
-        <div class="flex gap-4 mb-4 p-4 rounded-xl glass">
-          <div class="flex-1">
-            <h4 class="font-semibold mb-1">${item.name}</h4>
-            <p class="text-[var(--accent)] font-bold mb-2">$${parseFloat(item.price).toFixed(2)}</p>
-            <div class="flex items-center gap-3">
-              <button onclick="updateCartQty('${item.product_id}', -1)" class="w-8 h-8 rounded-lg glass">-</button>
-              <span class="font-mono">${item.qty}</span>
-              <button onclick="updateCartQty('${item.product_id}', 1)" class="w-8 h-8 rounded-lg glass">+</button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function checkout() {
-      if (cart.length === 0) return;
-      for (const item of cart) {
-        await db.from('orders').insert([{ user_id: currentUser.id, product_id: item.product_id, product_name: item.name, total: parseFloat(item.price) * item.qty, status: 'pending', progress: 0 }]);
-      }
-      cart = []; saveCart(); updateCartUI(); closeCart();
-      showToast('Order placed successfully!', 'success');
-      fetchOrders();
-    }
-
-    function openDashboard() { fetchOrders(); document.getElementById('dashOverlay').classList.add('open'); document.getElementById('dashPanel').classList.add('open'); }
-    function closeDashboard() { document.getElementById('dashOverlay').classList.remove('open'); document.getElementById('dashPanel').classList.remove('open'); }
-
-    function filterOrders(filter) {
-      orderFilter = filter;
-      document.querySelectorAll('.order-filter-btn').forEach(btn => {
-        btn.classList.remove('active', 'bg-[var(--accent)]', 'text-black'); btn.classList.add('glass');
-      });
-      document.querySelector(`[onclick="filterOrders('${filter}')"]`).classList.add('active', 'bg-[var(--accent)]', 'text-black');
-      document.querySelector(`[onclick="filterOrders('${filter}')"]`).classList.remove('glass');
-      renderOrders();
-    }
-
-    function renderOrders() {
-      let filtered = orders;
-      if (orderFilter === 'active') filtered = orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
-      else if (orderFilter === 'completed') filtered = orders.filter(o => o.status === 'completed');
-      
-      const container = document.getElementById('ordersContainer');
-      if (filtered.length === 0) { container.innerHTML = '<div class="text-center py-16 px-6 text-[var(--fg-muted)]">No orders</div>'; return; }
-      
-      container.innerHTML = filtered.map(o => `
-        <div class="p-6 border-b border-[var(--border)] hover:bg-white/5 cursor-pointer" onclick="openOrderDetail('${o.id}')">
-          <div class="flex justify-between mb-2">
-            <h3 class="font-semibold">${o.product_name}</h3>
-            <span class="text-xs px-2 py-1 rounded-full glass status-${o.status}">${o.status}</span>
-          </div>
-          <div class="progress-container mb-2"><div class="progress-fill" style="width: ${o.progress}%"></div></div>
-          <div class="text-xs text-[var(--fg-muted)]">${o.progress}% Complete</div>
-        </div>
-      `).join('');
-    }
-
-    function openOrderDetail(id) {
-      const o = orders.find(x => x.id === id);
-      if (!o) return;
-      document.getElementById('orderDetail').innerHTML = `
-        <button onclick="closeOrderModal()" class="absolute top-4 right-4 p-2 rounded-full glass"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-        <h2 class="text-2xl font-bold mb-2">${o.product_name}</h2>
-        <p class="text-sm text-[var(--fg-muted)] mb-6">Order #${o.id.slice(0, 8)}</p>
-        <div class="mb-8">
-          <div class="flex justify-between text-sm mb-2"><span>Progress</span><span class="font-bold text-[var(--accent)]">${o.progress}%</span></div>
-          <div class="progress-container h-3"><div class="progress-fill" style="width: ${o.progress}%"></div></div>
-        </div>
-        <div class="mb-6"><span class="status-badge status-${o.status}">${o.status}</span></div>
-        ${o.notes ? `<div class="p-4 rounded-xl glass mb-6"><h4 class="font-semibold mb-2">Notes</h4><p class="text-sm text-[var(--fg-muted)]">${o.notes}</p></div>` : ''}
-        ${o.files && o.files.length > 0 ? `
-          <div><h4 class="font-semibold mb-3">Files</h4>
-            <div class="space-y-2">
-              ${o.files.map(f => `<a href="${f.url}" target="_blank" class="flex items-center gap-3 p-4 rounded-xl glass hover:border-[var(--accent)]"><span>${f.name}</span></a>`).join('')}
-            </div>
-          </div>
-        ` : '<div class="text-center py-8 text-[var(--fg-muted)]">No files delivered yet</div>'}
-      `;
-      document.getElementById('orderModal').classList.add('open');
-    }
-    function closeOrderModal() { document.getElementById('orderModal').classList.remove('open'); }
-
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = 'toast-item';
-      toast.innerHTML = `<span>${message}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    function scrollToProducts() { document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' }); }
-
-    // Start
-    init();
-  </script>
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+    </script>
 </body>
 </html>
